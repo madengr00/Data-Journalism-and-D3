@@ -28,7 +28,9 @@ var chosenXAxis = "poverty";
 var chosenYAxis = "obesity";
 
 /* Initialize tooltip */
-tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d; });
+var tip = d3.tip()
+    .attr('class', 'd3-tip')
+    .html(function(d) { return (`State: <strong>${d.state}</strong><hr>${chosenXAxis}: ${d[chosenXAxis]}<hr>${chosenYAxis}: ${d[chosenYAxis]}`)});
 
 
 // //**********************************************//
@@ -40,14 +42,15 @@ d3.csv("assets/data/data.csv")
         data.forEach(function(data) {
             //x values
             data.poverty = +data.poverty;
-            data.ageMoe = +data.ageMoe;
-            data.incomeMoe = +data.incomeMoe;
+            data.age = +data.age;
+            data.income = +data.income;
             //y values
             data.obesity = +data.obesity;
             data.smokes = +data.smokes;
             data.healthcare = +data.healthcare;
-            //state abbreviation
+            //state abbreviation and name
             data.abbr = data.abbr;
+            data.state = data.state;
             console.log(data.abbr);
         });
         
@@ -114,27 +117,9 @@ d3.csv("assets/data/data.csv")
 
             //function used to update markers group with new tooltip
         function updateToolTip(chosenXAxis, chosenYAxis, markersGroup) {
-
-            // var toolTip = d3.tip()
-            //         .attr('class', 'd3-tip')
-            //         .html(function(d) { return d; });
-            
-            // markersGroup.call(toolTip);
-            // markersGroup.selectAll('rect')
-            //     .data(data)
-            //     .enter()
-            //     .append('rect')
-            //     .on('mouseover', tip.show)
-            //     .on('mouseout', tip.hide)
-
-            // // markersGroup.on("mouseover", function(data){
-            // //     toolTip.show(data);
-            // // })
-            // //     // onmouse event
-            // //     .on("mouseout", function(data, index) {
-            // //         toolTip.hide(data);
-            // //     });
-
+            //tip defined / intitialized at the top
+            //invoke the tip in the context of the visualization
+            markersGroup.call(tip)
             return markersGroup;
         }
 
@@ -162,7 +147,9 @@ d3.csv("assets/data/data.csv")
             .attr("cy", d => yLinearScale(d[chosenYAxis]))
             .attr("r", 12)
             .attr("fill", "black")
-            .attr("opacity", ".4");
+            .attr("opacity", ".4")
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide);
 
         var texts = markersGroup.selectAll("text")
             .data(data)
@@ -184,7 +171,7 @@ d3.csv("assets/data/data.csv")
             .attr("y", 20)
             .attr("value", "poverty") // value to grab for event listener
             .classed("active", true)
-            .text("In Poverty %");
+            .text("In Poverty (%)");
 
         var ageLabel = xlabelsGroup.append("text")
             .attr("x", 0)
