@@ -47,8 +47,8 @@ d3.csv("assets/data/data.csv")
             data.smokes = +data.smokes;
             data.healthcare = +data.healthcare;
             //state abbreviation
-            data.state = +data.state;
-            // console.log(data.poverty);
+            data.abbr = data.abbr;
+            console.log(data.abbr);
         });
         
         //Step2: Create scale functions
@@ -97,12 +97,17 @@ d3.csv("assets/data/data.csv")
 
         //Step4:  Create function to update marker group with a transition
             //new markers
-        function renderMarkers(markersGroup, newXScale, chosenXAxis, newYScale, chosenYAxis) {
+        function renderMarkers(markersGroup, circles, texts, newXScale, chosenXAxis, newYScale, chosenYAxis) {
             
-            markersGroup.transition()
+            circles.transition()
                 .duration(1000)
                 .attr("cx", d => newXScale(d[chosenXAxis]))
-                .attr("cy", d => newYScale(d[chosenYAxis]));
+                .attr("cy", d => newYScale(d[chosenYAxis]))
+
+            texts.transition()
+                .duration(1000)
+                .attr("x", d => newXScale(d[chosenXAxis]))
+                .attr("y", d => newYScale(d[chosenYAxis]))
             
             return markersGroup;
         }
@@ -145,18 +150,30 @@ d3.csv("assets/data/data.csv")
             .classed("y-axis", true)
             .call(leftAxis)
         
-        //Step6: Append initial markers
-        var markersGroup = chartGroup.selectAll("circle")
+        //Step6: Transform a g element with the location of the data point
+        var markersGroup = chartGroup.append("g");
+            
+        //Step7: Add markers and text to the g element above
+        var circles = markersGroup.selectAll("circle")
             .data(data)
             .enter()
             .append("circle")
             .attr("cx", d => xLinearScale(d[chosenXAxis]))
             .attr("cy", d => yLinearScale(d[chosenYAxis]))
             .attr("r", 12)
-            .attr("fill", "purple")
-            .attr("opacity", ".5");
+            .attr("fill", "black")
+            .attr("opacity", ".4");
 
-        //Step7: Add text to the markers
+        var texts = markersGroup.selectAll("text")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("x", d => xLinearScale(d[chosenXAxis]))
+            .attr("y", d => yLinearScale(d[chosenYAxis]))
+            .attr('text-anchor', 'middle')
+            .attr('alignment-baseline', 'central')
+            .text(function(d) {return d.abbr});
+            
     
         // // Create group for 3 x-axis labels
         var xlabelsGroup = chartGroup.append("g")
@@ -237,7 +254,7 @@ d3.csv("assets/data/data.csv")
                 xAxis = renderXAxis(xLinearScale, xAxis);
 
                 // updates markers with new x values
-                markersGroup = renderMarkers(markersGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+                markersGroup = renderMarkers(markersGroup, circles, texts, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
                 // updates tooltips with new info
                 markersGroup = updateToolTip(chosenXAxis, chosenYAxis, markersGroup);
@@ -297,7 +314,7 @@ d3.csv("assets/data/data.csv")
                 yAxis = renderYAxis(yLinearScale, yAxis);
 
                 // updates markers with new y values
-                markersGroup = renderMarkers(markersGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+                markersGroup = renderMarkers(markersGroup,circles,texts, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
                 // updates tooltips with new info
                 // markersGroup = updateToolTip(chosenYAxis, markersGroup);
